@@ -20,12 +20,10 @@ void test_AdditionShareExecutor_0() {
         y = Math::rand32(0, 100);
         Log::i("Addend: " + std::to_string(x) + " and " + std::to_string(y));
     }
-    AdditionShareExecutor e(x, y);
-    e.setBenchmark(BenchmarkLevel::DETAILED);
-    e.setLogBenchmark(true);
-    e.compute();
+    AdditionShareExecutor e(x, y, 32);
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
     if (!Mpi::isCalculator()) {
-        Log::i(std::to_string((e.getResult())));
+        Log::i(std::to_string((e.result())));
     }
 }
 
@@ -37,11 +35,9 @@ void test_RsaOtMultiplicationShareExecutor_1() {
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
     RsaOtMultiplicationShareExecutor e(x, y, 32);
-    e.setBenchmark(BenchmarkLevel::DETAILED);
-    e.setLogBenchmark(true);
-    e.compute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
     if (!Mpi::isCalculator()) {
-        Log::i(std::to_string((e.getResult())));
+        Log::i(std::to_string((e.result())));
     }
 }
 
@@ -53,11 +49,9 @@ void test_FixedMultiplicationShareExecutor_2() {
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
     FixedMultiplicationShareExecutor e(x, y, 32);
-    e.setBenchmark(BenchmarkLevel::DETAILED);
-    e.setLogBenchmark(true);
-    e.compute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
     if (!Mpi::isCalculator()) {
-        Log::i(std::to_string((e.getResult())));
+        Log::i(std::to_string((e.result())));
     }
 }
 
@@ -69,11 +63,23 @@ void test_RsaOtAndShareExecutor_3() {
         Log::i("Boolean: " + std::to_string(x) + " and " + std::to_string(y));
     }
     RsaOtAndShareExecutor e(x, y);
-    e.setBenchmark(BenchmarkLevel::DETAILED);
-    e.setLogBenchmark(true);
-    e.compute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
     if (!Mpi::isCalculator()) {
-        Log::i(std::to_string((e.getResult())));
+        Log::i(std::to_string((e.result())));
+    }
+}
+
+void test_ArrayAddition_4() {
+    std::vector<int64_t> v;
+    for (int i = 0; i < 3; i++) {
+        v.push_back(Math::rand32(0, 100));
+    }
+    if (Mpi::isCalculator()) {
+        Log::i("[" + std::to_string(v[0]) + ", " + std::to_string(v[1]) + ", " + std::to_string(v[2]) + "]");
+    }
+    int64_t res = AdditionShareExecutor(v, 32).benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute()->result();
+    if (Mpi::isDataHolder()) {
+        Log::i(std::to_string(res));
     }
 }
 

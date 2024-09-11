@@ -29,7 +29,9 @@ int main(int argc, char **argv) {
                 break;
             case 3:
                 test_RsaOtAndShareExecutor_3();
-
+                break;
+            case 4:
+                test_ArrayAddition_4();
         }
     } catch (...) {
         Log::e("Wrong argument");
