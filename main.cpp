@@ -36,6 +36,9 @@ int main(int argc, char **argv) {
             case 5:
                 test_Operators_5();
                 break;
+            case 6:
+                test_more_usage_of_IntSecret_6();
+                break;
         }
     } catch (...) {
         Log::e("Wrong argument");
