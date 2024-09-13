@@ -12,6 +12,9 @@
 #include "mpc_package/executor/share/arithmetic/multiplication/RsaOtMultiplicationShareExecutor.h"
 #include "mpc_package/executor/share/arithmetic/multiplication/FixedMultiplicationShareExecutor.h"
 #include "mpc_package/executor/share/boolean/and/RsaOtAndShareExecutor.h"
+#include "mpc_package/data/IntSecret.h"
+
+using namespace std;
 
 void test_AdditionShareExecutor_0() {
     int x, y;
@@ -21,7 +24,7 @@ void test_AdditionShareExecutor_0() {
         Log::i("Addend: " + std::to_string(x) + " and " + std::to_string(y));
     }
     AdditionShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
     if (!Mpi::isCalculator()) {
         Log::i(std::to_string((e.result())));
     }
@@ -35,7 +38,7 @@ void test_RsaOtMultiplicationShareExecutor_1() {
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
     RsaOtMultiplicationShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
     if (!Mpi::isCalculator()) {
         Log::i(std::to_string((e.result())));
     }
@@ -49,7 +52,7 @@ void test_FixedMultiplicationShareExecutor_2() {
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
     FixedMultiplicationShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
     if (!Mpi::isCalculator()) {
         Log::i(std::to_string((e.result())));
     }
@@ -63,7 +66,7 @@ void test_RsaOtAndShareExecutor_3() {
         Log::i("Boolean: " + std::to_string(x) + " and " + std::to_string(y));
     }
     RsaOtAndShareExecutor e(x, y);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute();
+    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
     if (!Mpi::isCalculator()) {
         Log::i(std::to_string((e.result())));
     }
@@ -77,10 +80,17 @@ void test_ArrayAddition_4() {
     if (Mpi::isCalculator()) {
         Log::i("[" + std::to_string(v[0]) + ", " + std::to_string(v[1]) + ", " + std::to_string(v[2]) + "]");
     }
-    int64_t res = AdditionShareExecutor(v, 32).benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute()->result();
+    int64_t res = AdditionShareExecutor(v, 32).benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(
+            true)->result();
     if (Mpi::isDataHolder()) {
         Log::i(std::to_string(res));
     }
+}
+
+void test_Operators_5() {
+    int a = Math::rand32();
+    int64_t res = IntSecret(a, 32).share().add(15).add(-15).reconstruct().get();
+    Log::i(to_string(res));
 }
 
 #endif //DEMO_TEST_CASES_H

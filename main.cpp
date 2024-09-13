@@ -32,6 +32,10 @@ int main(int argc, char **argv) {
                 break;
             case 4:
                 test_ArrayAddition_4();
+                break;
+            case 5:
+                test_Operators_5();
+                break;
         }
     } catch (...) {
         Log::e("Wrong argument");
