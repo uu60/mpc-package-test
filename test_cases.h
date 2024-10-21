@@ -8,173 +8,95 @@
 #include "mpc_package/utils/Log.h"
 #include "mpc_package/utils/Mpi.h"
 #include "mpc_package/utils/Math.h"
-#include "mpc_package/executor/share/arithmetic/addition/AdditionShareExecutor.h"
-#include "mpc_package/executor/share/arithmetic/multiplication/RsaOtMultiplicationShareExecutor.h"
-#include "mpc_package/executor/share/arithmetic/multiplication/FixedMultiplicationShareExecutor.h"
-#include "mpc_package/executor/share/boolean/and/RsaOtAndShareExecutor.h"
-#include "mpc_package/data/IntSecret.h"
+#include "mpc_package/arithmetic/addition/AdditionShareExecutor.h"
+#include "mpc_package/arithmetic/multiplication/RsaOtMultiplicationShareExecutor.h"
+#include "mpc_package/arithmetic/multiplication/FixedMultiplicationShareExecutor.h"
+#include "mpc_package/comparison/ComparisonExecutor.h"
+#include "mpc_package/boolean/and/RsaOtAndShareExecutor.h"
+#include "mpc_package/api/IntSecret.h"
 
 using namespace std;
 
 void test_AdditionShareExecutor_0() {
     int x, y;
-    if (!Mpi::isCalculator()) {
+    if (!Mpi::isServer()) {
         x = Math::rand32(-100, 100);
         y = Math::rand32(-100, 100);
         Log::i("Addend: " + std::to_string(x) + " and " + std::to_string(y));
     }
-    AdditionShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
-    if (!Mpi::isCalculator()) {
+    AdditionShareExecutor<int32_t> e(x, y);
+    e.benchmark(Executor<int>::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
+    if (!Mpi::isServer()) {
         Log::i(std::to_string((e.result())));
     }
 }
 
 void test_RsaOtMultiplicationShareExecutor_1() {
     int x, y;
-    if (!Mpi::isCalculator()) {
-        x = Math::rand32();
-        y = Math::rand32();
+    if (!Mpi::isServer()) {
+        x = Math::rand32(-100, 100);
+        y = Math::rand32(-100, 100);
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
-    RsaOtMultiplicationShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
-    if (!Mpi::isCalculator()) {
+    RsaOtMultiplicationShareExecutor<int32_t> e(x, y);
+    e.benchmark(Executor<int>::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
+    if (!Mpi::isServer()) {
         Log::i(std::to_string((e.result())));
     }
 }
 
 void test_FixedMultiplicationShareExecutor_2() {
     int x, y;
-    if (!Mpi::isCalculator()) {
-        x = Math::rand32(0, 100);
-        y = Math::rand32(0, 100);
+    if (!Mpi::isServer()) {
+        x = Math::rand32(-100, 100);
+        y = Math::rand32(-100, 100);
         Log::i("Multiplier: " + std::to_string(x) + " and " + std::to_string(y));
     }
-    FixedMultiplicationShareExecutor e(x, y, 32);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
-    if (!Mpi::isCalculator()) {
+    FixedMultiplicationShareExecutor<int32_t> e(x, y);
+    e.benchmark(Executor<int>::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
+    if (!Mpi::isServer()) {
         Log::i(std::to_string((e.result())));
     }
 }
 
 void test_RsaOtAndShareExecutor_3() {
     bool x, y;
-    if (!Mpi::isCalculator()) {
+    if (!Mpi::isServer()) {
         x = Math::rand32(0, 1);
         y = Math::rand32(0, 1);
         Log::i("Boolean: " + std::to_string(x) + " and " + std::to_string(y));
     }
     RsaOtAndShareExecutor e(x, y);
-    e.benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
-    if (!Mpi::isCalculator()) {
+    e.execute(true);
+    if (!Mpi::isServer()) {
         Log::i(std::to_string((e.result())));
     }
 }
 
-void test_ArrayAddition_4() {
-    std::vector<int64_t> v;
-    for (int i = 0; i < 3; i++) {
-        v.push_back(Math::rand32(0, 100));
+void test_comparison_4() {
+    int x, y;
+    if (Mpi::isClient()) {
+        x = Math::rand32(-100, 100);
+        y = Math::rand32(-100, 100);
+        Log::i("x: " + std::to_string(x) + " y " + std::to_string(y));
     }
-    if (Mpi::isCalculator()) {
-        Log::i("[" + std::to_string(v[0]) + ", " + std::to_string(v[1]) + ", " + std::to_string(v[2]) + "]");
-    }
-    int64_t res = AdditionShareExecutor(v, 32).benchmark(AbstractExecutor::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(
-            true)->result();
-    if (Mpi::isDataHolder()) {
-        Log::i(std::to_string(res));
-    }
-}
-
-void test_Operators_5() {
-    int a = Math::rand32(0, 100);
-    if (Mpi::isDataHolder()) {
-        Log::i("Origin: " + to_string(a));
-    }
-    int64_t res = IntSecret(a, 32).share().add(15).add(-15).reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("Reconstruct result: " + to_string(res));
-    }
-
-    int m0 = Math::rand32();
-    int m1 = Math::rand32();
-    if (Mpi::isDataHolder()) {
-        Log::i("m0: " + to_string(m0));
-        Log::i("m1: " + to_string(m1));
-    }
-    int64_t res1 = IntSecret(m0, 32).share().multiply(IntSecret(m1, 32).share().get()).reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("Multiplication result: " + to_string(res1));
+    ComparisonExecutor<int8_t> e(x, y);
+    e.benchmark(Executor<int8_t>::BenchmarkLevel::DETAILED)->logBenchmark(true)->execute(true);
+    if (!Mpi::isServer()) {
+        Log::i(std::to_string((e.result())));
     }
 }
 
-void test_more_usage_of_IntSecret_6() {
-    // si will be differently generated by A and B
-    IntSecret si(Mpi::rank() == 0 ? 25 : 323, 32);
-    // when reconstructing, sA and sB will be sent to C for reconstruction
-    int64_t s = si.reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("s=" + to_string(s));
+void test_convert_arith_5() {
+    int z0 = Math::rand32(-100, 100);
+    int z1 = Math::rand32(-100, 100);
+    if (Mpi::isServer()) {
+        Log::i("original zi = " + std::to_string(Mpi::rank() == 0 ? z0 : z1));
     }
-
-    // following is addition of 2 numbers
-    IntSecret xi(Mpi::rank() == 0 ? 456 : 50, 32);
-    IntSecret yi(Mpi::rank() == 0 ? 12 : 300 , 32);
-    int64_t sum = xi.add(yi.get()).reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("sum=" + to_string(sum));
-    }
-
-    // array example data
-    std::vector<int64_t> xis, yis;
-    if (Mpi::rank() == 0) {
-        xis = {1, 2, 3, 4, 5};
-        yis = {3, 4, 5, 6, 7};
-    } else {
-        xis = {0, 1, 2, 3, 4};
-        yis = {4, 3, 2, 1, 0};
-    }
-
-    IntSecret temp(0, 32);
-    // ∑ x
-    for (int64_t x : xis) {
-        temp = IntSecret(temp.get() + x, 32);
-    }
-    int64_t sum1 = temp.reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("sum1=" + to_string(sum1));
-    }
-
-    // ∑ x + y
-    temp = IntSecret(0, 32);
-    for (int i = 0; i < xis.size(); i++) {
-        temp = temp.add(xis[i]).add(yis[i]);
-    }
-    int64_t sum2 = temp.reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("sum2=" + to_string(sum2));
-    }
-
-    // x0 · x1 · ... · xn
-    temp = IntSecret(xis[0], 32);
-    for (int i = 0; i < xis.size() - 1; i++) {
-        temp = temp.multiply(xis[i + 1]);
-    }
-    int64_t sum3 = temp.reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("sum3=" + to_string(sum3));
-    }
-
-    // following is multiplication of multiple numbers (x[] y[])
-    // ∑ x · y
-    temp = IntSecret(0, 32);
-    for (int i = 0; i < xis.size() - 1; i++) {
-        temp = temp.add(IntSecret(xis[i], 32).multiply(yis[i]).get());
-    }
-    int64_t sum4 = temp.reconstruct().get();
-    if (Mpi::isDataHolder()) {
-        Log::i("sum4=" + to_string(sum4));
+    int zi = Mpi::rank() == 0 ? z0 : z1;
+    int zi1 = IntShareExecutor<int>().zi(zi)->convertZiToBool()->convertZiToArithmetic()->zi();
+    if (Mpi::isServer()) {
+        Log::i("zi = " + std::to_string(zi1));
     }
 }
 

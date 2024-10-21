@@ -31,14 +31,12 @@ int main(int argc, char **argv) {
                 test_RsaOtAndShareExecutor_3();
                 break;
             case 4:
-                test_ArrayAddition_4();
+                test_comparison_4();
                 break;
             case 5:
-                test_Operators_5();
-                break;
-            case 6:
-                test_more_usage_of_IntSecret_6();
-                break;
+                test_convert_arith_5();
+//            default:
+//                test_AdditionShareExecutor_0();
         }
     } catch (...) {
         Log::e("Wrong argument");
